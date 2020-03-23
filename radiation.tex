@@ -1,0 +1,29 @@
+\documentclass[tikz,border=3.14mm]{standalone} %defines size of document
+\begin{document}
+\usetikzlibrary{decorations.markings}
+\foreach \R in {0.2,0.3,...,4.5}
+{\begin{tikzpicture}[declare function={a=0.6; 
+ tcrit(\r,\ang)=(-2*a*\r*cos(\ang)+sqrt(2)*sqrt(\r*\r*(2-a*a+a*a*cos(2*\ang))))/2;}]
+ %Equation for the expanding ray (r) from a point (A) moving at a proportion (a) of the circle of expading radius (R)
+	% (R)^2 = (a*r + r*cos(angle))^2 + (r*sin(angle))^2
+ \clip (-5,-5) rectangle (5,5);
+
+ %Draws radiation lines with loops
+ \foreach \ang in {0,22.5,...,337.5}{
+ 	\draw[very thick, color = blue,
+ 	decoration={markings, mark=at position {.4+a*\R-.6*\R} with {\arrow{>}}},
+    postaction={decorate}
+    ]
+ 	(a*\R,0) -- ++(\ang:{tcrit(\R,\ang)}) -- (\ang:1.2*\R) -- (\ang:10);
+ }
+ % (x,y) -- ++(x,y) = line from previous point to following and "++" updates ++(x,y) as new starting point for any point after
+ % (x,y) -- +(x,y)  = " above but "+" does not update any points after
+ % (angle:radius) = format for polar plotting
+ \draw[thick,even odd rule,fill=white,fill opacity=0.5] (0,0) circle[radius=\R] 
+ circle[radius=1.2*\R];
+ \node (B) at (a*\R, 0) [circle,fill,inner sep=5pt]{};
+\end{tikzpicture}}
+\end{document}
+
+
+%Need to fiture out rate at which the arrows 

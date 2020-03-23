@@ -1,0 +1,34 @@
+\documentclass[tikz]{standalone}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+\pgfplotsset{ticks=none}
+\begin{document}
+\tikzset{declare function={bellshape(\x,\mu,\sigma)=exp(-(\x-\mu)^2/(2*\sigma^2));
+wavepacket(\x,\mu,\sigma,\k)=bellshape(\x,\mu,\sigma)*sin(\k*(\x-\mu));}}
+\foreach \X in {-350,-340,...,350}
+  {
+    \begin{tikzpicture}
+        \begin{axis}[scale=3,
+                    width=4cm,
+                    xmin=-150, xmax=150, 
+                    ymin=-.25, ymax=.25,
+                    axis line style={draw=none},
+                    ]
+  \addplot [only marks, samples at={-150,150}]
+            {0.1*(wavepacket(x,\X-100,25,4)+
+                wavepacket(x,\X-50,25,4)+
+                wavepacket(x,\X-25,25,4)+
+                wavepacket(x,\X+25,25,4)+
+                wavepacket(x,\X+50,25,4)+
+                wavepacket(x,\X+100,25,4))};
+  \addplot [domain=-250:250,samples=251,color=blue,smooth]
+            {0.1*(wavepacket(x,\X-100,25,4)+
+                wavepacket(x,\X-50,25,4)+
+                wavepacket(x,\X-25,25,4)+
+                wavepacket(x,\X+25,25,4)+
+                wavepacket(x,\X+50,25,4)+
+                wavepacket(x,\X+100,25,4))};
+        \end{axis}
+    \end{tikzpicture}
+  }
+\end{document}

@@ -1,0 +1,24 @@
+\documentclass[tikz]{standalone}
+     \usepackage{tikz,pgfplots}
+     \pgfplotsset{compat=1.16}
+     \pgfplotsset{ticks=none}
+     \begin{document}
+     \tikzset{declare function={bellshape(\x,\mu,\sigma)=exp(-(\x-\mu)^2/(2*\sigma^2));}}
+     \usetikzlibrary{intersections}
+     \foreach \center in {-5,-4.9,...,5}
+     {
+       \begin{tikzpicture}
+           \begin{axis}[scale=3,
+                       width=4cm,
+                       xmin=-3, xmax=3, 
+                       ymin=-.05, ymax=1.4,
+                       axis line style={draw=none},
+                       ]
+               \addplot [only marks, samples at={-3,3}]
+                 {bellshape(x,\center,.5)};
+               \addplot [domain=-5:5, samples=300,color=blue, name path=A]
+                 {bellshape(x,\center,.5)};
+           \end{axis}
+       \end{tikzpicture}
+     }
+     \end{document}
