@@ -1,0 +1,235 @@
+\documentclass[tikz,convert=false]{standalone}
+\usepackage{fourier,siunitx,pgfplots,tikz,ifthen}
+\pgfplotsset{compat=1.16}
+\pgfplotsset{ticks=none}
+\definecolor{coldblue}{cmyk}{0.321 0.004 0 0.047}
+\definecolor{hotred}{cmyk}{0 0.89 .80 .19}
+\makeatletter
+\tikzset{
+  declare function={
+    celsiusToFahrenheit(\pgf@temp)=\pgf@temp*1.8+32;
+    fahrenheitToCelsius(\pgf@temp)=(\pgf@temp-32)/1.8;
+  },
+  thermometer/name/.initial=tm,
+  thermometer/height/.initial=+4cm,
+  thermometer/width/.initial=+.7cm,
+  thermometer/top angle/.initial=180,
+  thermometer/bottom angle/.initial=270,
+  thermometer/top left/.initial=10000,%Changes the thermometer values
+  thermometer/bottom left/.initial=0, %Changes the thermometer values
+  thermometer/top right/.initial={celsiusToFahrenheit(\pgfkeysvalueof{/tikz/thermometer/top left})},
+  thermometer/bottom right/.initial={celsiusToFahrenheit(\pgfkeysvalueof{/tikz/thermometer/bottom left})},
+  thermometer/left steps/.initial=10,
+  thermometer/right steps/.initial=9,
+  thermometer/scale distance/.initial=+.3cm,
+  thermometer/scale name/.initial=tm@tm,
+  thermometer/.search also={/tikz},
+  thermometer/.code={\pgfqkeys{/tikz/thermometer}{#1}},
+  Thermometer/.style={
+    insert path={{%
+      [thermometer={#1}]
+      [/utils/exec=%
+      \pgfmathsetlengthmacro\tikz@tm@halfwidth{(\pgfkeysvalueof{/tikz/thermometer/width})/2}%
+      \pgfmathsetmacro\tikz@tm@bottomaux{180-.5*(\pgfkeysvalueof{/tikz/thermometer/bottom angle})}%
+      \pgfmathsetlengthmacro\tikz@tm@bottomradius{\tikz@tm@halfwidth/(sin(\tikz@tm@bottomaux))}%
+      \pgfmathsetmacro\tikz@tm@topaux{180-.5*(\pgfkeysvalueof{/tikz/thermometer/top angle})}%
+      \pgfmathsetlengthmacro\tikz@tm@topradius{\tikz@tm@halfwidth/(sin(\tikz@tm@topaux))}%
+      ]
+      ++ (90+\tikz@tm@bottomaux:\tikz@tm@bottomradius)
+        coordinate[alias=\pgfkeysvalueof{/tikz/thermometer/scale name}-bottom left] (\pgfkeysvalueof{/tikz/thermometer/name}-bottom left)
+      arc [start angle=90+\tikz@tm@bottomaux, delta angle={\pgfkeysvalueof{/tikz/thermometer/bottom angle}}, radius=+\tikz@tm@bottomradius]
+        coordinate[alias=\pgfkeysvalueof{/tikz/thermometer/scale name}-bottom right] (\pgfkeysvalueof{/tikz/thermometer/name}-bottom right)
+      -- ++ (+90:\pgfkeysvalueof{/tikz/thermometer/height})
+        coordinate[alias=\pgfkeysvalueof{/tikz/thermometer/scale name}-top right] (\pgfkeysvalueof{/tikz/thermometer/name}-top right)
+      arc [start angle=-90+\tikz@tm@topaux, delta angle={\pgfkeysvalueof{/tikz/thermometer/top angle}}, radius=+\tikz@tm@topradius]
+        coordinate[alias=\pgfkeysvalueof{/tikz/thermometer/scale name}-top left] (\pgfkeysvalueof{/tikz/thermometer/name}-top left)
+      -- cycle
+  }}},
+  tm scale/.style 2 args={
+    insert path={{
+      [thermometer={#2}]
+      ([shift={(#1:\pgfkeysvalueof{/tikz/thermometer/scale distance})}] \pgfkeysvalueof{/tikz/thermometer/scale name}-bottom #1) --
+      ([shift={(#1:\pgfkeysvalueof{/tikz/thermometer/scale distance})}] \pgfkeysvalueof{/tikz/thermometer/scale name}-top #1)
+      \foreach \tikz@tm@scale[
+        evaluate={\tikz@tm@pos=\tikz@tm@scale/(\pgfkeysvalueof{/tikz/thermometer/#1 steps})},
+        evaluate={\tikz@tm@value=\pgfkeysvalueof{/tikz/thermometer/bottom #1}+\tikz@tm@pos*(\pgfkeysvalueof{/tikz/thermometer/top #1}-(\pgfkeysvalueof{/tikz/thermometer/bottom #1}))}
+      ] in {0,...,\pgfkeysvalueof{/tikz/thermometer/#1 steps}} {
+        node[pos/.expanded=\tikz@tm@pos, tm scale #1/.expanded={\tikz@tm@value}] {}
+      }
+    }}
+  },
+  tm fill/.style args={#1#2:[#3]#4}{
+    /utils/exec={%
+      \if#1l
+        \def\pgf@tempa{east}%
+        \def\pgf@tempb{west}%
+      \else
+        \def\pgf@tempa{west}%
+        \def\pgf@tempb{east}%
+      \fi
+      \pgfmathsetmacro\tikt@tm@pos{#4/(\pgfkeysvalueof{/tikz/thermometer/top #1#2}-(\pgfkeysvalueof{/tikz/thermometer/bottom #1#2}))}},
+    path picture={
+      \path (\pgfkeysvalueof{/tikz/thermometer/scale name}-bottom #1#2 -| path picture bounding box.south \pgf@tempb) --
+            (\pgfkeysvalueof{/tikz/thermometer/scale name}-top #1#2 -| path picture bounding box.south \pgf@tempb) coordinate[pos/.expanded=\tikt@tm@pos, name=tm@aux];
+      \fill [style/.expanded={#3}] (path picture bounding box.south \pgf@tempa) rectangle (tm@aux);
+    }
+  }
+}
+\makeatother
+
+\tikzset{
+  tm scale left/.style={
+    shape=rectangle,
+    draw,
+    inner sep=+0pt,
+    minimum height=+0pt,
+    minimum width=+5pt,
+    label={left:{\tablenum[table-format=25.0,table-auto-round]{#1}\csname l__siunitx_unit_product_tl\endcsname\si{\kelvin}}} %table-format changes the width of numbers
+  },
+  tm scale right/.style={
+    shape=rectangle,
+    draw,
+    inner sep=+0pt,
+    minimum height=+0pt,
+    minimum width=+10pt,
+    label={right:{\tablenum[table-format=3.0,table-auto-round]{#1}\csname l__siunitx_unit_product_tl\endcsname\si{\degree F}}}
+  }
+}
+\begin{document}
+
+\foreach \KELVIN[evaluate={\KELVINCOLOR=min(\KELVIN,1000)}] in {100,99,...,70}
+{
+
+\newcount\MyNumber%
+\MyNumber=\KELVIN%
+%\def\tp#1{\texttt{\string\MyNumber #1} =}%
+%\tp{} \the\MyNumber
+%\advance\MyNumber by 10\relax%
+%\tp{ + 10} \the\MyNumber
+\multiply\MyNumber by 1244\relax%
+%\tp{ * 100} \the\MyNumber
+
+\begin{tikzpicture}
+\path [draw=black,line width=1pt,fill=gray!20]
+      [Thermometer]
+      [tm fill={left:[hotred!\KELVINCOLOR!coldblue]\KELVIN*100}]; %Need to Adjust this for scale
+  \begin{axis}[at={(80,-50)}, scale=18,
+              width=2cm,
+              xmin=-2000, xmax=2000, 
+              ymin=-1.1, ymax=1.1,
+              axis line style={draw=none},
+              ]
+              \addplot [domain=-5000:5000, samples=300,color=blue]
+                {sin((x-130)/(100/27.2/(exp((-70+\KELVIN)/20))))}; %adjust this so it stops at ?-kelvin = 100
+
+  \end{axis}
+\draw[blue,fill=blue] (3.65,4) circle (4ex);
+\draw[blue,fill=blue] (4.9,4) circle (4ex);
+\draw[blue,fill=blue] (6.15,4) circle (4ex);
+
+%\draw[black,fill=black] (4.12,4) rectangle (5.68,5);
+
+\draw[thick] (3.65,4) -- (6.15,4);
+\draw[thick] (3.65,4.2) -- (3.65,3.8);
+\draw[thick] (6.15,4.2) -- (6.15,3.8);
+\node[draw] at (1.5,3) {\the\MyNumber \space K}; %change this with line 104
+
+
+
+\end{tikzpicture}
+}
+
+\def \KELVIN {70}
+\foreach \y in {4,3.8,...,1.88}
+{
+
+\newcount\MyNumber%
+\MyNumber=\KELVIN%
+%\def\tp#1{\texttt{\string\MyNumber #1} =}%
+%\tp{} \the\MyNumber
+%\advance\MyNumber by 10\relax%
+%\tp{ + 10} \the\MyNumber
+\multiply\MyNumber by 1244\relax%
+%\tp{ * 100} \the\MyNumber
+
+
+\begin{tikzpicture}
+
+\path [draw=black,line width=1pt,fill=gray!20]
+      [Thermometer]
+      [tm fill={left:[hotred!70!coldblue]\KELVIN*100}];
+%\draw [tm scale={left}{}];
+  \begin{axis}[at={(80,-50)}, scale=18,
+              width=2cm,
+              xmin=-2000, xmax=2000, 
+              ymin=-1.1, ymax=1.1,
+              axis line style={draw=none},
+              ]
+              \addplot [domain=-5000:5000, samples=300,color=blue]
+                {sin((x-130)/(100/27.2/(exp((-70+\KELVIN)/20))))};
+
+  \end{axis}
+
+\draw[blue,fill=blue] (3.65,4) circle (4ex);
+\draw[blue,fill=blue] (4.9,4) circle (4ex);
+\draw[blue,fill=blue] (6.15,4) circle (4ex);
+
+%\draw[black,fill=black] (4.12,4) rectangle (5.68,5);
+
+\draw[thick] (3.65,\y) -- (6.15,\y);
+\draw[thick] (3.65,\y+.2) -- (3.65,\y-.2);
+\draw[thick] (6.15,\y+.2) -- (6.15,\y-.2);
+
+
+\node[draw] at (1.5,3) {\the\MyNumber \space K};
+
+\end{tikzpicture}
+}
+
+
+\foreach \y in {4,3.8,...,1.53}
+{
+
+\newcount\MyNumber%
+\MyNumber=\KELVIN%
+%\def\tp#1{\texttt{\string\MyNumber #1} =}%
+%\tp{} \the\MyNumber
+%\advance\MyNumber by 10\relax%
+%\tp{ + 10} \the\MyNumber
+\multiply\MyNumber by 1244\relax%
+%\tp{ * 100} \the\MyNumber
+
+\begin{tikzpicture}
+
+\path [draw=black,line width=1pt,fill=gray!20]
+      [Thermometer]
+      [tm fill={left:[hotred!70!coldblue]\KELVIN*100}];
+%\draw [tm scale={left}{}];
+  \begin{axis}[at={(80,-50)}, scale=18,
+              width=2cm,
+              xmin=-2000, xmax=2000, 
+              ymin=-1.1, ymax=1.1,
+              axis line style={draw=none},
+              ]
+              \addplot [domain=-5000:5000, samples=500,color=blue]
+                {sin((x-130)/(100/27.2/(exp((-70+\KELVIN)/20))))};
+
+  \end{axis}
+
+\draw[blue,fill=blue] (3.65,4) circle (4ex);
+\draw[blue,fill=blue] (4.9,4) circle (4ex);
+\draw[blue,fill=blue] (6.15,4) circle (4ex);
+
+%\draw[black,fill=black] (4.12,4) rectangle (5.68,5);
+
+\draw[thick] (3.65,1.88) -- (6.15,1.88);
+\draw[thick] (3.65,1.88+.2) -- (3.65,1.88-.2);
+\draw[thick] (6.15,1.88+.2) -- (6.15,1.88-.2);
+
+\node[draw] at (1.5,3) {\the\MyNumber \space K};
+
+\end{tikzpicture}
+}
+
+
+\end{document}
