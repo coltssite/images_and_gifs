@@ -1,0 +1,64 @@
+\documentclass[tikz]{standalone}
+\usepackage{tikz,pgf}
+\usetikzlibrary{shapes,fadings}
+\begin{document}
+
+
+\foreach \y in {1,.95,...,0}
+	{
+	\begin{tikzpicture}
+	\pgfmathsetmacro{\z}{100*\y-10}
+	\pgfmathsetmacro{\x}{.7*\y}
+
+	\tikzfading [name=radialfade, inner color=transparent!\z, outer color=transparent!100]
+
+	\fill [blue, path fading=radialfade] circle (3);
+
+	\shade[ball color = blue, opacity = \x] (0,0) circle (.2cm); %this is the problem
+
+	%shade[ball color = blue, opacity = \y] (.25,0) circle (0.025cm); %opacity is 0 to 1
+	%shade[ball color = blue, opacity = \y] (-.25,0) circle (.25cm); %opacity is 0 to 1
+	%shade[ball color = blue, opacity = \y] (0,.25) circle (.25cm); %opacity is 0 to 1
+	%shade[ball color = blue, opacity = \y] (0,-.25) circle (.25cm); %opacity is 0 to 1
+
+
+
+
+
+
+
+
+
+	\end{tikzpicture}
+	}
+\foreach \y in {0,.05,...,1}
+	{
+	\begin{tikzpicture}
+	\pgfmathsetmacro{\z}{100*\y-10}
+	\pgfmathsetmacro{\x}{.7*\y}
+
+	\tikzfading [name=radialfade, inner color=transparent!\z, outer color=transparent!100]
+
+	\fill [blue, path fading=radialfade] circle (3);
+
+	\shade[ball color = blue, opacity = \x] (0,0) circle (.2cm); %this is the problem
+
+	%shade[ball color = blue, opacity = \y] (.25,0) circle (0.025cm); %opacity is 0 to 1
+	%shade[ball color = blue, opacity = \y] (-.25,0) circle (.25cm); %opacity is 0 to 1
+	%shade[ball color = blue, opacity = \y] (0,.25) circle (.25cm); %opacity is 0 to 1
+	%shade[ball color = blue, opacity = \y] (0,-.25) circle (.25cm); %opacity is 0 to 1
+
+
+
+
+
+
+
+
+
+	\end{tikzpicture}
+	}
+
+
+
+\end{document}
